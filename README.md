@@ -4,6 +4,8 @@ A coefficient α characterizes asymmetric transition rates in independent discre
 
 **Paper:** [DOI: 10.5281/zenodo.19308787](https://doi.org/10.5281/zenodo.19308787)
 
+**Calculator:** [asymmetry-calculator.netlify.app](https://asymmetry-calculator.netlify.app/)
+
 ## The coefficient
 
 In systems made of independent discrete elements with asymmetric transition rates, a single coefficient
