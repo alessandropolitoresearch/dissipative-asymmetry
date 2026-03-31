@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dissipative Asymmetry Calculator</title>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+  --red: #f85149; --green: #3fb950; --purple: #bc8cff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 1.8em; margin-bottom: 4px; }
+h1 span { color: var(--muted); font-weight: 300; font-size: 0.6em; }
+h2 { font-size: 1.3em; margin-bottom: 12px; color: var(--accent); }
+h3 { font-size: 1.1em; margin: 16px 0 8px; }
+
+.tabs { display: flex; gap: 2px; margin: 20px 0 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.tab { padding: 10px 18px; cursor: pointer; border: 1px solid transparent;
+  border-bottom: none; border-radius: 6px 6px 0 0; color: var(--muted); font-size: 0.9em; }
+.tab:hover { color: var(--text); background: var(--surface); }
+.tab.active { color: var(--text); background: var(--surface);
+  border-color: var(--border); border-bottom: 1px solid var(--surface); margin-bottom: -1px; }
+
+.panel { display: none; background: var(--surface); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 6px 6px; padding: 24px; }
+.panel.active { display: block; }
+
+.grid { display: grid; gap: 24px; }
+.grid-3 { grid-template-columns: 1fr 1fr 2fr; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3col { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 800px) { .grid-3, .grid-2, .grid-3col { grid-template-columns: 1fr; } }
+
+label { display: block; font-size: 0.85em; color: var(--muted); margin: 8px 0 4px; }
+input[type="number"], input[type="range"] { width: 100%; padding: 8px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 0.95em; }
+input[type="number"]:focus { border-color: var(--accent); outline: none; }
+
+.metric { background: var(--bg); border-radius: 6px; padding: 12px; margin: 6px 0; text-align: center; }
+.metric .value { font-size: 1.5em; font-weight: 600; color: var(--accent); }
+.metric .label { font-size: 0.8em; color: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.85em; margin: 8px 0; }
+th, td { padding: 6px 10px; border: 1px solid var(--border); text-align: right; }
+th { background: var(--bg); color: var(--muted); text-align: center; }
+td:first-child, th:first-child { text-align: center; }
+
+canvas { width: 100% !important; height: auto !important; max-height: 300px; }
+
+.formula { background: var(--bg); border-left: 3px solid var(--accent); padding: 12px 16px;
+  margin: 12px 0; font-family: 'Courier New', monospace; font-size: 1.05em; border-radius: 0 4px 4px 0; }
+
+.card { background: var(--bg); border-radius: 6px; padding: 16px; }
+.card h3 { color: var(--green); margin-top: 0; }
+
+.footer { text-align: center; margin-top: 30px; padding: 16px; color: var(--muted); font-size: 0.8em;
+  border-top: 1px solid var(--border); }
+.footer a { color: var(--accent); text-decoration: none; }
+
+.sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+.cols-text { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .cols-text { grid-template-columns: 1fr; } }
+
+p { margin: 8px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Dissipative Asymmetry Calculator <span>DOI: 10.5281/zenodo.19308787</span></h1>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)">Tutorial</div>
+  <div class="tab" onclick="showTab(1)">Binary (&alpha;)</div>
+  <div class="tab" onclick="showTab(2)">Correlation (&beta;)</div>
+  <div class="tab" onclick="showTab(3)">M-state</div>
+  <div class="tab" onclick="showTab(4)">Field-dependent</div>
+</div>
+
+<!-- ====== TAB 0: Tutorial ====== -->
+<div class="panel active" id="panel0">
+  <h2>What is Dissipative Asymmetry?</h2>
+  <p>Many physical systems are made of <strong>independent pieces</strong> that can be in two states: on or off
+  (excited or ground, 1 or 0). When you read these pieces, errors happen &mdash; but not equally in both directions.</p>
+  <p><strong>Example:</strong> imagine a sensor with 100 pixels.</p>
+
+  <div class="cols-text" style="margin:16px 0;">
+    <div class="card">
+      <h3>p_d &mdash; dominant error</h3>
+      <p>An "on" pixel is misread as "off." This is the common error &mdash; things naturally turn off (charge leaks, qubits decay, DNA degrades).</p>
+      <p><em>Example: p_d = 0.04 (4%)</em></p>
+    </div>
+    <div class="card">
+      <h3>p_e &mdash; excitation error</h3>
+      <p>An "off" pixel is misread as "on." This is the rare error &mdash; things don't spontaneously turn on without energy.</p>
+      <p><em>Example: p_e = 0.001 (0.1%)</em></p>
+    </div>
+  </div>
+
+  <hr class="sep">
+  <h3>The coefficient &alpha;</h3>
+  <p>From these two error rates, you compute a single number:</p>
+  <div class="formula">&alpha; = ln[(1 &minus; p_d) / (1 &minus; p_e)]</div>
+  <p>With the example above: &alpha; = ln[0.96 / 0.999] = <strong>&minus;0.0398</strong></p>
+  <p>This number tells you how different the two error directions are.</p>
+
+  <hr class="sep">
+  <h3>What is k?</h3>
+  <p><strong>k</strong> is how many elements are "on" (excited) in your system.</p>
+  <div class="formula">ln[P(k) / P(0)] = k &times; &alpha;</div>
+  <p>Every extra "on" element changes the readout probability by the same amount &alpha;.</p>
+
+  <hr class="sep">
+  <h3>What is F?</h3>
+  <p><strong>F</strong> represents the operating conditions: temperature, voltage, humidity.</p>
+  <p>The key property: <strong>F cancels exactly</strong> in the ratio P(k)/P(0). If you change the temperature, total errors change, but <strong>&alpha; stays the same</strong>.</p>
+  <p>&alpha; is a property of the system, not of the conditions.</p>
+
+  <hr class="sep">
+  <h3>Three things you can do with &alpha;</h3>
+  <div class="grid grid-3col">
+    <div class="card"><h3>1. Measure once</h3><p>Compute &alpha; from p_d and p_e. This single number characterizes your system. No need to measure again unless the system physically changes.</p></div>
+    <div class="card"><h3>2. Estimate</h3><p>For any k, the readout accuracy relative to k=0 is e^(k&times;&alpha;). Just multiply k by &alpha;. No extra measurements needed.</p></div>
+    <div class="card"><h3>3. Detect degradation</h3><p>If &alpha; changes over time, the system has degraded. If &alpha; is stable but errors increase, only the environment changed.</p></div>
+  </div>
+</div>
+
+<!-- ====== TAB 1: Binary ====== -->
+<div class="panel" id="panel1">
+  <h2>Binary (&alpha;)</h2>
+  <div class="grid grid-3">
+    <div>
+      <h3>Input</h3>
+      <label>p_d (dominant error)</label>
+      <input type="number" id="pd1" value="0.04" min="0.0001" max="0.9999" step="0.001">
+      <label>p_e (excitation error)</label>
+      <input type="number" id="pe1" value="0.001" min="0.0001" max="0.9999" step="0.001">
+      <label>N (elements)</label>
+      <input type="number" id="N1" value="100" min="2" max="100000" step="1">
+      <br><br>
+      <button onclick="calcBinary()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
+    </div>
+    <div>
+      <h3>Result</h3>
+      <div class="metric"><div class="label">&alpha;</div><div class="value" id="alpha1">—</div></div>
+      <div class="metric"><div class="label">p_d / p_e</div><div class="value" id="ratio1">—</div></div>
+      <div class="metric"><div class="label">Direction</div><div class="value" id="dir1" style="font-size:1em;">—</div></div>
+      <table id="table1"><thead><tr><th>k</th><th>k&times;&alpha;</th><th>Accuracy</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div>
+      <h3>Visualization</h3>
+      <canvas id="chart1a"></canvas>
+      <canvas id="chart1b" style="margin-top:12px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TAB 2: Correlation ====== -->
+<div class="panel" id="panel2">
+  <h2>Correlation (&beta;)</h2>
+  <p style="color:var(--muted);margin-bottom:16px;">For systems where adjacent elements influence each other.</p>
+  <div class="grid grid-3">
+    <div>
+      <h3>Input</h3>
+      <label>p_d</label>
+      <input type="number" id="pd2" value="0.04" min="0.0001" max="0.9999" step="0.001">
+      <label>p_e</label>
+      <input type="number" id="pe2" value="0.001" min="0.0001" max="0.9999" step="0.001">
+      <label>c (correlation strength, 0=independent)</label>
+      <input type="number" id="c2" value="0.05" min="0" max="1" step="0.01">
+      <label>N (elements)</label>
+      <input type="number" id="N2" value="50" min="2" max="1000" step="1">
+      <br><br>
+      <button onclick="calcCorrelation()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
+    </div>
+    <div>
+      <h3>Result</h3>
+      <div class="metric"><div class="label">&alpha;</div><div class="value" id="alpha2">—</div></div>
+      <div class="metric"><div class="label">&beta;</div><div class="value" id="beta2">—</div></div>
+      <div class="formula" style="font-size:0.85em;">ln[P(k,n)/P(0,0)] = k&times;&alpha; + n&times;&beta;</div>
+      <p style="font-size:0.85em;color:var(--muted);">k = excited elements, n = adjacent excited pairs.<br>
+      &alpha; measures asymmetry per element.<br>&beta; measures extra effect when neighbors are both excited.<br>When c = 0: &beta; = 0 (binary case).</p>
+    </div>
+    <div>
+      <h3>Visualization: &alpha; vs &beta; contribution</h3>
+      <canvas id="chart2"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TAB 3: M-state ====== -->
+<div class="panel" id="panel3">
+  <h2>M-state</h2>
+  <p style="color:var(--muted);margin-bottom:16px;">For systems with more than 2 states (e.g., MLC Flash, multi-level cells).</p>
+  <div class="grid grid-3">
+    <div>
+      <h3>Input</h3>
+      <label>M (number of states)</label>
+      <input type="number" id="M3" value="3" min="2" max="8" step="1" onchange="buildMstateInputs()">
+      <div id="mstate-inputs"></div>
+      <br>
+      <button onclick="calcMstate()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
+    </div>
+    <div>
+      <h3>Result</h3>
+      <div id="mstate-results"></div>
+      <div class="formula" style="font-size:0.85em;">ln[P/P(0)] = &Sigma; k_s &times; &alpha;_s</div>
+      <p style="font-size:0.85em;color:var(--muted);">Each state contributes independently. The total log-ratio is the sum of contributions from all states.</p>
+    </div>
+    <div>
+      <h3>Visualization: &alpha; per state</h3>
+      <canvas id="chart3"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TAB 4: Field-dependent ====== -->
+<div class="panel" id="panel4">
+  <h2>Field-dependent</h2>
+  <p style="color:var(--muted);margin-bottom:16px;">When an external field enters the transition rates asymmetrically, &alpha; becomes field-dependent.</p>
+  <div class="grid grid-3">
+    <div>
+      <h3>Input</h3>
+      <label>p_d</label>
+      <input type="number" id="pd4" value="0.04" min="0.0001" max="0.9999" step="0.001">
+      <label>p_e,base</label>
+      <input type="number" id="pe4" value="0.001" min="0.0001" max="0.9999" step="0.001">
+      <label>&delta; (field coupling)</label>
+      <input type="number" id="delta4" value="0.005" min="0.0001" max="0.1" step="0.001">
+      <label>F max</label>
+      <input type="number" id="Fmax4" value="10" min="1" max="100" step="1">
+      <br><br>
+      <button onclick="calcField()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
+    </div>
+    <div>
+      <h3>Result</h3>
+      <div class="metric"><div class="label">F* (critical field)</div><div class="value" id="Fstar4">—</div></div>
+      <div class="metric"><div class="label">&alpha;(F=0)</div><div class="value" id="alpha4_0">—</div></div>
+      <div class="metric"><div class="label">&alpha;(F*)</div><div class="value" id="alpha4_star">—</div></div>
+      <div class="formula" style="font-size:0.85em;">&alpha;(F) = ln[(1&minus;p_d)/(1&minus;p_e,base&minus;&delta;F)]</div>
+      <p style="font-size:0.85em;color:var(--muted);">As F increases, p_e grows. At F*, p_e = p_d and &alpha; = 0. Beyond F*, the asymmetry inverts.</p>
+    </div>
+    <div>
+      <h3>Visualization: &alpha;(F)</h3>
+      <canvas id="chart4"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Footer ====== -->
+<hr class="sep">
+<div class="grid grid-3col">
+  <div class="card"><h3>Characterization</h3><p>Measure p_d and p_e once. Get &alpha; &mdash; one number that describes your system's intrinsic asymmetry, independent of operating conditions.</p></div>
+  <div class="card"><h3>Monitoring</h3><p>If &alpha; changes over time, the system has physically degraded. If &alpha; is stable but errors increase, only the environment changed.</p></div>
+  <div class="card"><h3>Comparison</h3><p>Two devices, different manufacturers, different conditions. Compare &alpha; &mdash; because &alpha; does not depend on conditions. Same &alpha; = same intrinsic quality.</p></div>
+</div>
+
+<div class="footer">
+  <a href="https://doi.org/10.5281/zenodo.19308787">DOI: 10.5281/zenodo.19308787</a> &middot;
+  &copy; 2026 Alessandro Polito &middot; CC BY-NC-ND 4.0
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+// ====== Tabs ======
+function showTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', j===i));
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', j===i));
+}
+
+// ====== Helpers ======
+function val(id) { return parseFloat(document.getElementById(id).value); }
+function setText(id, v) { document.getElementById(id).textContent = v; }
+
+let charts = {};
+function makeChart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), cfg);
+}
+
+// ====== Tab 1: Binary ======
+function calcBinary() {
+  const pd = val('pd1'), pe = val('pe1'), N = val('N1');
+  const alpha = Math.log((1 - pd) / (1 - pe));
+
+  setText('alpha1', alpha.toFixed(6));
+  setText('ratio1', (pd / pe).toFixed(1) + '\u00d7');
+  setText('dir1', alpha < 0 ? 'Passive (\u03b1<0)' : 'Active (\u03b1>0)');
+
+  const ks = [...new Set([0, 1, Math.round(N*0.1), Math.round(N*0.3), Math.round(N*0.5), N])].filter(k => k >= 0 && k <= N).sort((a,b) => a-b);
+  const tbody = document.querySelector('#table1 tbody');
+  tbody.innerHTML = ks.map(k =>
+    `<tr><td>${k}</td><td>${(k*alpha).toFixed(3)}</td><td>${(Math.exp(k*alpha)*100).toFixed(1)}%</td></tr>`
+  ).join('');
+
+  const kAll = Array.from({length: N+1}, (_,i) => i);
+  const lnRatio = kAll.map(k => k * alpha);
+  const accuracy = kAll.map(k => Math.exp(k * alpha) * 100);
+
+  makeChart('chart1a', {
+    type: 'line',
+    data: { labels: kAll, datasets: [{ label: 'ln[P(k)/P(0)]', data: lnRatio, borderColor: '#58a6ff', borderWidth: 2, pointRadius: 0, fill: false }] },
+    options: { responsive: true, plugins: { legend: { display: false } },
+      scales: { x: { title: { display: true, text: 'k', color: '#8b949e' }, ticks: { color: '#8b949e', maxTicksLimit: 10 }, grid: { color: '#30363d' } },
+               y: { title: { display: true, text: 'ln[P(k)/P(0)]', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } } }
+  });
+
+  makeChart('chart1b', {
+    type: 'line',
+    data: { labels: kAll, datasets: [{ label: 'Accuracy %', data: accuracy, borderColor: '#f85149', borderWidth: 2, pointRadius: 0, fill: false }] },
+    options: { responsive: true, plugins: { legend: { display: false } },
+      scales: { x: { title: { display: true, text: 'k', color: '#8b949e' }, ticks: { color: '#8b949e', maxTicksLimit: 10 }, grid: { color: '#30363d' } },
+               y: { title: { display: true, text: 'Accuracy (%)', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, min: 0, max: 105 } } }
+  });
+}
+
+// ====== Tab 2: Correlation ======
+function calcCorrelation() {
+  const pd = val('pd2'), pe = val('pe2'), c = val('c2'), N = val('N2');
+  const alpha = Math.log((1 - pd) / (1 - pe));
+  const beta = (pd * (1 + c) < 1) ? Math.log((1 - pd * (1 + c)) / (1 - pd)) : 0;
+
+  setText('alpha2', alpha.toFixed(6));
+  setText('beta2', beta.toFixed(6));
+
+  const kAll = Array.from({length: N+1}, (_,i) => i);
+  const lnIndep = kAll.map(k => k * alpha);
+  const lnCorr = kAll.map(k => {
+    const n = k * (k - 1) / Math.max(N - 1, 1);
+    return k * alpha + n * beta;
+  });
+
+  makeChart('chart2', {
+    type: 'line',
+    data: { labels: kAll, datasets: [
+      { label: 'Independent (\u03b1 only)', data: lnIndep, borderColor: '#58a6ff', borderWidth: 2, pointRadius: 0, fill: false },
+      { label: 'With correlation (\u03b1 + \u03b2)', data: lnCorr, borderColor: '#f85149', borderWidth: 2, borderDash: [6,3], pointRadius: 0, fill: false }
+    ] },
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e6edf3' } } },
+      scales: { x: { title: { display: true, text: 'k', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' } },
+               y: { title: { display: true, text: 'ln[P/P(0)]', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } } }
+  });
+}
+
+// ====== Tab 3: M-state ======
+function buildMstateInputs() {
+  const M = val('M3');
+  const div = document.getElementById('mstate-inputs');
+  div.innerHTML = '';
+  for (let s = 0; s < M; s++) {
+    const def = s === 0 ? 0.999 : Math.max(0.99 - s * 0.05, 0.5);
+    div.innerHTML += `<label>q_${s} (correct readout prob, state ${s})</label>
+      <input type="number" id="q3_${s}" value="${def.toFixed(3)}" min="0.01" max="0.999" step="0.01">`;
+  }
+}
+
+function calcMstate() {
+  const M = val('M3');
+  const q = [];
+  for (let s = 0; s < M; s++) q.push(val('q3_' + s));
+  const alphas = q.map(qs => Math.log(qs / q[0]));
+
+  const resDiv = document.getElementById('mstate-results');
+  resDiv.innerHTML = alphas.map((a, s) =>
+    `<div class="metric"><div class="label">&alpha;_${s}</div><div class="value">${a.toFixed(6)}</div></div>`
+  ).join('');
+
+  const colors = alphas.map((_, i) => {
+    const t = i / Math.max(M - 1, 1);
+    const r = Math.round(88 + t * 100), g = Math.round(166 - t * 40), b = Math.round(255 - t * 100);
+    return `rgb(${r},${g},${b})`;
+  });
+
+  makeChart('chart3', {
+    type: 'bar',
+    data: { labels: alphas.map((_, s) => 'State ' + s),
+      datasets: [{ label: '\u03b1_s', data: alphas, backgroundColor: colors }] },
+    options: { responsive: true, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } },
+               y: { title: { display: true, text: '\u03b1_s', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } } }
+  });
+}
+
+// ====== Tab 4: Field-dependent ======
+function calcField() {
+  const pd = val('pd4'), pe = val('pe4'), delta = val('delta4'), Fmax = val('Fmax4');
+  const Fstar = (pd - pe) / delta;
+  const alpha0 = Math.log((1 - pd) / (1 - pe));
+
+  setText('Fstar4', Fstar.toFixed(3));
+  setText('alpha4_0', alpha0.toFixed(6));
+
+  const peAtStar = pe + delta * Fstar;
+  if (peAtStar > 0 && peAtStar < 1) {
+    setText('alpha4_star', Math.log((1 - pd) / (1 - peAtStar)).toFixed(6));
+  } else {
+    setText('alpha4_star', '—');
+  }
+
+  const Fvals = Array.from({length: 200}, (_, i) => i * Fmax / 199);
+  const alphaF = Fvals.map(F => {
+    const peF = pe + delta * F;
+    return (peF > 0 && peF < 1) ? Math.log((1 - pd) / (1 - peF)) : null;
+  });
+
+  makeChart('chart4', {
+    type: 'line',
+    data: { labels: Fvals.map(f => f.toFixed(1)), datasets: [
+      { label: '\u03b1(F)', data: alphaF, borderColor: '#3fb950', borderWidth: 2, pointRadius: 0, fill: false, spanGaps: true }
+    ] },
+    options: { responsive: true, plugins: {
+        legend: { display: false },
+        annotation: Fstar < Fmax ? { annotations: { fstar: { type: 'line', xMin: Fstar, xMax: Fstar, borderColor: '#f85149', borderWidth: 1, borderDash: [4,4] } } } : {}
+      },
+      scales: { x: { title: { display: true, text: 'External field F', color: '#8b949e' }, ticks: { color: '#8b949e', maxTicksLimit: 10 }, grid: { color: '#30363d' } },
+               y: { title: { display: true, text: '\u03b1(F)', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#30363d' } } } }
+  });
+}
+
+// ====== Init ======
+buildMstateInputs();
+calcBinary();
+</script>
+</body>
+</html>
