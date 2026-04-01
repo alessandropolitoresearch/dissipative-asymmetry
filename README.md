@@ -1,6 +1,6 @@
 # Dissipative Asymmetry
 
-A coefficient α characterizes asymmetric transition rates in independent discrete systems. Operating conditions cancel exactly. The same structure is observed across quantum processors, semiconductor memories, DNA replication, optical sensors, and digital PCR. No new physics, no new mathematics — Bernoulli probability theory (1713).
+A study in statistics and mathematics. A coefficient α characterizes asymmetric transition rates in independent discrete systems. Operating conditions cancel exactly in the ratio of readout probabilities. The same structure is observed across quantum processors, semiconductor memories, DNA replication, optical sensors, and digital PCR. No new physics, no new mathematics — Bernoulli probability theory (1713).
 
 **Paper:** [DOI: 10.5281/zenodo.19308787](https://doi.org/10.5281/zenodo.19308787)
 
