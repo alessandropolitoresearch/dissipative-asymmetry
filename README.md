@@ -33,8 +33,6 @@ The same algebraic structure has been observed across multiple physically distin
 
 | Domain | Measurements | Fit |
 |--------|-------------|-----|
-| IBM Fez (156 qubits) | 160,000 | R² = 0.88–0.97 |
-| IBM Kingston (156 qubits) | 160,000 | R² = 0.88–0.97 |
 | DRAM retention | 304,024 | 1.74× asymmetry |
 | DRAM read disturb | 147,456 | 1.90× asymmetry |
 | HST ACS/WFC CCD | 8,570,000 | R² = 0.9996 |
@@ -49,7 +47,6 @@ The same algebraic structure has been observed across multiple physically distin
 | `verify_additivity.py` | Property 8: α₁ + α₂ = α_total | None (simulation) |
 | `verify_falsification.py` | 5 tests to break the invariant | None (simulation) |
 | `verify_dpcr.py` | Real dPCR data, R² = 0.999998 | [definetherain](https://github.com/jacobhurst/definetherain) repo |
-| `verify_ibm_quantum.py` | IBM Quantum hardware test | IBM Quantum account |
 
 ## Quick start
 
@@ -66,18 +63,6 @@ python3 scripts/verify_falsification.py
 # Digital PCR verification (requires definetherain data)
 git clone https://github.com/jacobhurst/definetherain.git /tmp/definetherain
 python3 scripts/verify_dpcr.py
-
-# IBM Quantum (requires account at quantum.ibm.com)
-python3 scripts/verify_ibm_quantum.py
-```
-
-## Calculator
-
-Interactive web calculator with 5 tabs (Tutorial, Binary, Correlation, M-state, Field-dependent):
-
-```bash
-pip install streamlit numpy matplotlib pandas
-streamlit run calculator/app.py
 ```
 
 ## Requirements
@@ -87,10 +72,6 @@ Python 3.8+
 numpy
 scipy
 ```
-
-For the calculator: `streamlit matplotlib pandas`
-
-For IBM Quantum: `qiskit qiskit-ibm-runtime`
 
 ## License
 
