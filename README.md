@@ -79,6 +79,6 @@ CC BY-NC-ND 4.0
 
 ## Author
 
-Alessandro Polito — Independent Researcher
+ap
 
 Contact: ap.writer@proton.me
