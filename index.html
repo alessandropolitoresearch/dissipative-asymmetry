@@ -33,12 +33,11 @@ h3 { font-size: 1.1em; margin: 16px 0 8px; }
 
 .grid { display: grid; gap: 24px; }
 .grid-3 { grid-template-columns: 1fr 1fr 2fr; }
-.grid-2 { grid-template-columns: 1fr 1fr; }
 .grid-3col { grid-template-columns: 1fr 1fr 1fr; }
-@media (max-width: 800px) { .grid-3, .grid-2, .grid-3col { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .grid-3, .grid-3col { grid-template-columns: 1fr; } }
 
 label { display: block; font-size: 0.85em; color: var(--muted); margin: 8px 0 4px; }
-input[type="number"], input[type="range"] { width: 100%; padding: 8px; background: var(--bg);
+input[type="number"] { width: 100%; padding: 8px; background: var(--bg);
   border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 0.95em; }
 input[type="number"]:focus { border-color: var(--accent); outline: none; }
 
@@ -78,10 +77,7 @@ p { margin: 8px 0; }
 
 <div class="tabs">
   <div class="tab active" onclick="showTab(0)">Tutorial</div>
-  <div class="tab" onclick="showTab(1)">Binary (&alpha;)</div>
-  <div class="tab" onclick="showTab(2)">Correlation (&beta;)</div>
-  <div class="tab" onclick="showTab(3)">M-state</div>
-  <div class="tab" onclick="showTab(4)">Field-dependent</div>
+  <div class="tab" onclick="showTab(1)">Calculator</div>
 </div>
 
 <!-- ====== TAB 0: Tutorial ====== -->
@@ -132,9 +128,9 @@ p { margin: 8px 0; }
   </div>
 </div>
 
-<!-- ====== TAB 1: Binary ====== -->
+<!-- ====== TAB 1: Calculator ====== -->
 <div class="panel" id="panel1">
-  <h2>Binary (&alpha;)</h2>
+  <h2>Calculator</h2>
   <div class="grid grid-3">
     <div>
       <h3>Input</h3>
@@ -145,111 +141,19 @@ p { margin: 8px 0; }
       <label>N (elements)</label>
       <input type="number" id="N1" value="100" min="2" max="100000" step="1">
       <br><br>
-      <button onclick="calcBinary()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
+      <button onclick="calcBinary()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
     </div>
     <div>
       <h3>Result</h3>
-      <div class="metric"><div class="label">&alpha;</div><div class="value" id="alpha1">—</div></div>
-      <div class="metric"><div class="label">p_d / p_e</div><div class="value" id="ratio1">—</div></div>
-      <div class="metric"><div class="label">Direction</div><div class="value" id="dir1" style="font-size:1em;">—</div></div>
+      <div class="metric"><div class="label">&alpha;</div><div class="value" id="alpha1">&mdash;</div></div>
+      <div class="metric"><div class="label">p_d / p_e</div><div class="value" id="ratio1">&mdash;</div></div>
+      <div class="metric"><div class="label">Direction</div><div class="value" id="dir1" style="font-size:1em;">&mdash;</div></div>
       <table id="table1"><thead><tr><th>k</th><th>k&times;&alpha;</th><th>Accuracy</th></tr></thead><tbody></tbody></table>
     </div>
     <div>
       <h3>Visualization</h3>
       <canvas id="chart1a"></canvas>
       <canvas id="chart1b" style="margin-top:12px;"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ====== TAB 2: Correlation ====== -->
-<div class="panel" id="panel2">
-  <h2>Correlation (&beta;)</h2>
-  <p style="color:var(--muted);margin-bottom:16px;">For systems where adjacent elements influence each other.</p>
-  <div class="grid grid-3">
-    <div>
-      <h3>Input</h3>
-      <label>p_d</label>
-      <input type="number" id="pd2" value="0.04" min="0.0001" max="0.9999" step="0.001">
-      <label>p_e</label>
-      <input type="number" id="pe2" value="0.001" min="0.0001" max="0.9999" step="0.001">
-      <label>c (correlation strength, 0=independent)</label>
-      <input type="number" id="c2" value="0.05" min="0" max="1" step="0.01">
-      <label>N (elements)</label>
-      <input type="number" id="N2" value="50" min="2" max="1000" step="1">
-      <br><br>
-      <button onclick="calcCorrelation()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
-    </div>
-    <div>
-      <h3>Result</h3>
-      <div class="metric"><div class="label">&alpha;</div><div class="value" id="alpha2">—</div></div>
-      <div class="metric"><div class="label">&beta;</div><div class="value" id="beta2">—</div></div>
-      <div class="formula" style="font-size:0.85em;">ln[P(k,n)/P(0,0)] = k&times;&alpha; + n&times;&beta;</div>
-      <p style="font-size:0.85em;color:var(--muted);">k = excited elements, n = adjacent excited pairs.<br>
-      &alpha; measures asymmetry per element.<br>&beta; measures extra effect when neighbors are both excited.<br>When c = 0: &beta; = 0 (binary case).</p>
-    </div>
-    <div>
-      <h3>Visualization: &alpha; vs &beta; contribution</h3>
-      <canvas id="chart2"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ====== TAB 3: M-state ====== -->
-<div class="panel" id="panel3">
-  <h2>M-state</h2>
-  <p style="color:var(--muted);margin-bottom:16px;">For systems with more than 2 states (e.g., MLC Flash, multi-level cells).</p>
-  <div class="grid grid-3">
-    <div>
-      <h3>Input</h3>
-      <label>M (number of states)</label>
-      <input type="number" id="M3" value="3" min="2" max="8" step="1" onchange="buildMstateInputs()">
-      <div id="mstate-inputs"></div>
-      <br>
-      <button onclick="calcMstate()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
-    </div>
-    <div>
-      <h3>Result</h3>
-      <div id="mstate-results"></div>
-      <div class="formula" style="font-size:0.85em;">ln[P/P(0)] = &Sigma; k_s &times; &alpha;_s</div>
-      <p style="font-size:0.85em;color:var(--muted);">Each state contributes independently. The total log-ratio is the sum of contributions from all states.</p>
-    </div>
-    <div>
-      <h3>Visualization: &alpha; per state</h3>
-      <canvas id="chart3"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ====== TAB 4: Field-dependent ====== -->
-<div class="panel" id="panel4">
-  <h2>Field-dependent</h2>
-  <p style="color:var(--muted);margin-bottom:16px;">When an external field enters the transition rates asymmetrically, &alpha; becomes field-dependent.</p>
-  <div class="grid grid-3">
-    <div>
-      <h3>Input</h3>
-      <label>p_d</label>
-      <input type="number" id="pd4" value="0.04" min="0.0001" max="0.9999" step="0.001">
-      <label>p_e,base</label>
-      <input type="number" id="pe4" value="0.001" min="0.0001" max="0.9999" step="0.001">
-      <label>&delta; (field coupling)</label>
-      <input type="number" id="delta4" value="0.005" min="0.0001" max="0.1" step="0.001">
-      <label>F max</label>
-      <input type="number" id="Fmax4" value="10" min="1" max="100" step="1">
-      <br><br>
-      <button onclick="calcField()" style="padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Calculate</button>
-    </div>
-    <div>
-      <h3>Result</h3>
-      <div class="metric"><div class="label">F* (critical field)</div><div class="value" id="Fstar4">—</div></div>
-      <div class="metric"><div class="label">&alpha;(F=0)</div><div class="value" id="alpha4_0">—</div></div>
-      <div class="metric"><div class="label">&alpha;(F*)</div><div class="value" id="alpha4_star">—</div></div>
-      <div class="formula" style="font-size:0.85em;">&alpha;(F) = ln[(1&minus;p_d)/(1&minus;p_e,base&minus;&delta;F)]</div>
-      <p style="font-size:0.85em;color:var(--muted);">As F increases, p_e grows. At F*, p_e = p_d and &alpha; = 0. Beyond F*, the asymmetry inverts.</p>
-    </div>
-    <div>
-      <h3>Visualization: &alpha;(F)</h3>
-      <canvas id="chart4"></canvas>
     </div>
   </div>
 </div>
@@ -286,7 +190,7 @@ function makeChart(id, cfg) {
   charts[id] = new Chart(document.getElementById(id), cfg);
 }
 
-// ====== Tab 1: Binary ======
+// ====== Calculator ======
 function calcBinary() {
   const pd = val('pd1'), pe = val('pe1'), N = val('N1');
   const alpha = Math.log((1 - pd) / (1 - pe));
@@ -322,111 +226,7 @@ function calcBinary() {
   });
 }
 
-// ====== Tab 2: Correlation ======
-function calcCorrelation() {
-  const pd = val('pd2'), pe = val('pe2'), c = val('c2'), N = val('N2');
-  const alpha = Math.log((1 - pd) / (1 - pe));
-  const beta = (pd * (1 + c) < 1) ? Math.log((1 - pd * (1 + c)) / (1 - pd)) : 0;
-
-  setText('alpha2', alpha.toFixed(6));
-  setText('beta2', beta.toFixed(6));
-
-  const kAll = Array.from({length: N+1}, (_,i) => i);
-  const lnIndep = kAll.map(k => k * alpha);
-  const lnCorr = kAll.map(k => {
-    const n = k * (k - 1) / Math.max(N - 1, 1);
-    return k * alpha + n * beta;
-  });
-
-  makeChart('chart2', {
-    type: 'line',
-    data: { labels: kAll, datasets: [
-      { label: 'Independent (\u03b1 only)', data: lnIndep, borderColor: '#0969da', borderWidth: 2, pointRadius: 0, fill: false },
-      { label: 'With correlation (\u03b1 + \u03b2)', data: lnCorr, borderColor: '#cf222e', borderWidth: 2, borderDash: [6,3], pointRadius: 0, fill: false }
-    ] },
-    options: { responsive: true, plugins: { legend: { labels: { color: '#1f2328' } } },
-      scales: { x: { title: { display: true, text: 'k', color: '#656d76' }, ticks: { color: '#656d76' }, grid: { color: '#d0d7de' } },
-               y: { title: { display: true, text: 'ln[P/P(0)]', color: '#656d76' }, ticks: { color: '#656d76' }, grid: { color: '#d0d7de' } } } }
-  });
-}
-
-// ====== Tab 3: M-state ======
-function buildMstateInputs() {
-  const M = val('M3');
-  const div = document.getElementById('mstate-inputs');
-  div.innerHTML = '';
-  for (let s = 0; s < M; s++) {
-    const def = s === 0 ? 0.999 : Math.max(0.99 - s * 0.05, 0.5);
-    div.innerHTML += `<label>q_${s} (correct readout prob, state ${s})</label>
-      <input type="number" id="q3_${s}" value="${def.toFixed(3)}" min="0.01" max="0.999" step="0.01">`;
-  }
-}
-
-function calcMstate() {
-  const M = val('M3');
-  const q = [];
-  for (let s = 0; s < M; s++) q.push(val('q3_' + s));
-  const alphas = q.map(qs => Math.log(qs / q[0]));
-
-  const resDiv = document.getElementById('mstate-results');
-  resDiv.innerHTML = alphas.map((a, s) =>
-    `<div class="metric"><div class="label">&alpha;_${s}</div><div class="value">${a.toFixed(6)}</div></div>`
-  ).join('');
-
-  const colors = alphas.map((_, i) => {
-    const t = i / Math.max(M - 1, 1);
-    const r = Math.round(88 + t * 100), g = Math.round(166 - t * 40), b = Math.round(255 - t * 100);
-    return `rgb(${r},${g},${b})`;
-  });
-
-  makeChart('chart3', {
-    type: 'bar',
-    data: { labels: alphas.map((_, s) => 'State ' + s),
-      datasets: [{ label: '\u03b1_s', data: alphas, backgroundColor: colors }] },
-    options: { responsive: true, plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#656d76' }, grid: { color: '#d0d7de' } },
-               y: { title: { display: true, text: '\u03b1_s', color: '#656d76' }, ticks: { color: '#656d76' }, grid: { color: '#d0d7de' } } } }
-  });
-}
-
-// ====== Tab 4: Field-dependent ======
-function calcField() {
-  const pd = val('pd4'), pe = val('pe4'), delta = val('delta4'), Fmax = val('Fmax4');
-  const Fstar = (pd - pe) / delta;
-  const alpha0 = Math.log((1 - pd) / (1 - pe));
-
-  setText('Fstar4', Fstar.toFixed(3));
-  setText('alpha4_0', alpha0.toFixed(6));
-
-  const peAtStar = pe + delta * Fstar;
-  if (peAtStar > 0 && peAtStar < 1) {
-    setText('alpha4_star', Math.log((1 - pd) / (1 - peAtStar)).toFixed(6));
-  } else {
-    setText('alpha4_star', '—');
-  }
-
-  const Fvals = Array.from({length: 200}, (_, i) => i * Fmax / 199);
-  const alphaF = Fvals.map(F => {
-    const peF = pe + delta * F;
-    return (peF > 0 && peF < 1) ? Math.log((1 - pd) / (1 - peF)) : null;
-  });
-
-  makeChart('chart4', {
-    type: 'line',
-    data: { labels: Fvals.map(f => f.toFixed(1)), datasets: [
-      { label: '\u03b1(F)', data: alphaF, borderColor: '#1a7f37', borderWidth: 2, pointRadius: 0, fill: false, spanGaps: true }
-    ] },
-    options: { responsive: true, plugins: {
-        legend: { display: false },
-        annotation: Fstar < Fmax ? { annotations: { fstar: { type: 'line', xMin: Fstar, xMax: Fstar, borderColor: '#cf222e', borderWidth: 1, borderDash: [4,4] } } } : {}
-      },
-      scales: { x: { title: { display: true, text: 'External field F', color: '#656d76' }, ticks: { color: '#656d76', maxTicksLimit: 10 }, grid: { color: '#d0d7de' } },
-               y: { title: { display: true, text: '\u03b1(F)', color: '#656d76' }, ticks: { color: '#656d76' }, grid: { color: '#d0d7de' } } } }
-  });
-}
-
 // ====== Init ======
-buildMstateInputs();
 calcBinary();
 </script>
 </body>
